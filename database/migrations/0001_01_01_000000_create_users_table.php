@@ -17,6 +17,9 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            // Role is a plain string validated at the application layer ('admin'/'staff').
+            // Default 'staff' so a newly registered user can never become admin implicitly.
+            $table->string('role')->default('staff');
             $table->rememberToken();
             $table->timestamps();
         });
