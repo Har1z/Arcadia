@@ -1,11 +1,13 @@
 <?php
 
+use App\Models\User;
+
 it('redirects the home page to the dashboard', function () {
-    $this->get('/')->assertRedirect('/dashboard');
+    $this->actingAs(User::factory()->create())->get('/')->assertRedirect('/dashboard');
 });
 
 it('renders the dashboard inside the app layout', function () {
-    $response = $this->get('/dashboard');
+    $response = $this->actingAs(User::factory()->create())->get('/dashboard');
 
     $response->assertOk()
         ->assertSee('Arcadia', false)
@@ -23,7 +25,7 @@ it('renders the component showcase', function () {
 });
 
 it('puts the theme init script before the stylesheet so the page never flashes', function () {
-    $html = $this->get('/dashboard')->getContent();
+    $html = $this->actingAs(User::factory()->create())->get('/dashboard')->getContent();
 
     $themeInit = mb_strpos($html, 'document.documentElement.dataset.theme');
     $stylesheet = mb_strpos($html, 'rel="stylesheet"');
