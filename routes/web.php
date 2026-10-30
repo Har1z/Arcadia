@@ -3,7 +3,9 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\MachineController;
+use App\Http\Controllers\MaintenanceController;
 use Illuminate\Support\Facades\Route;
 
 // Root: authenticated users go to the dashboard, guests to the login page.
@@ -47,6 +49,17 @@ Route::middleware('auth')->group(function () {
         ->middleware('role:admin');
     Route::resource('categories', CategoryController::class)
         ->only(['index']);
+
+    // Maintenance logs and income records: both roles may create records,
+    // but ownership is enforced by MaintenanceLogPolicy / IncomeRecordPolicy
+    // (staff can only view/edit/delete their own rows).
+    // NOTE: parameters() gives the uncountable resources ('maintenance',
+    // 'income') descriptive route parameter names that match the
+    // controller's $maintenanceLog / $incomeRecord type-hints (binding).
+    Route::resource('maintenance', MaintenanceController::class)
+        ->parameters(['maintenance' => 'maintenanceLog']);
+    Route::resource('income', IncomeController::class)
+        ->parameters(['income' => 'incomeRecord']);
 });
 
 // Component/theme verification page. Not linked from the sidebar;

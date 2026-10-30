@@ -30,15 +30,18 @@ class IncomeRecordSeeder extends Seeder
                 // Fixed formula: busy machines and recent months earn more.
                 $playCount = 40 + ($index * 7) + ((3 - $monthsAgo) * 12);
 
-                IncomeRecord::create([
+                // user_id is not mass assignable (ownership guard), so the
+                // seeder assigns it directly — app input never can.
+                $record = new IncomeRecord([
                     'machine_id' => $machine->id,
-                    'user_id' => $index % 2 === 0 ? $budi : $sari,
                     // Past months close at month end; the running month is
                     // recorded as of today so dashboard ranges include it.
                     'date' => now()->subMonths($monthsAgo)->endOfMonth()->min(now()),
                     'play_count' => $playCount,
                     'total_income' => $playCount * (float) $machine->price_per_play,
                 ]);
+                $record->user_id = $index % 2 === 0 ? $budi : $sari;
+                $record->save();
             }
         }
     }

@@ -33,16 +33,19 @@ class MaintenanceLogSeeder extends Seeder
         ];
 
         foreach ($logs as $index => [$serial, $issue, $actionTaken, $cost, $status, $monthsAgo]) {
-            MaintenanceLog::create([
+            // user_id is not mass assignable (ownership guard), so the
+            // seeder assigns it directly — app input never can.
+            $log = new MaintenanceLog([
                 'machine_id' => $machines[$serial],
-                // Staff alternate as the reporting technician.
-                'user_id' => $index % 2 === 0 ? $budi : $sari,
                 'issue' => $issue,
                 'action_taken' => $actionTaken,
                 'cost' => $cost,
                 'status' => $status,
                 'date' => now()->subMonths($monthsAgo)->startOfMonth()->addDays($index * 2),
             ]);
+            // Staff alternate as the reporting technician.
+            $log->user_id = $index % 2 === 0 ? $budi : $sari;
+            $log->save();
         }
     }
 }
