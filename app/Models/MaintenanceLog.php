@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['machine_id', 'user_id', 'issue', 'action_taken', 'cost', 'status', 'date'])]
+// SECURITY: 'user_id' is deliberately NOT fillable — ownership is always
+// assigned server-side from the logged-in user, never from request input.
+#[Fillable(['machine_id', 'issue', 'action_taken', 'cost', 'status', 'date'])]
 class MaintenanceLog extends Model
 {
     /** @use HasFactory<MaintenanceLogFactory> */
@@ -17,6 +19,15 @@ class MaintenanceLog extends Model
     public const STATUS_OPEN = 'open';
 
     public const STATUS_DONE = 'done';
+
+    /**
+     * Indonesian labels for every status, used by badges, select
+     * options, and the filter dropdown.
+     */
+    public const STATUS_LABELS = [
+        self::STATUS_OPEN => 'Terbuka',
+        self::STATUS_DONE => 'Selesai',
+    ];
 
     protected function casts(): array
     {

@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['machine_id', 'user_id', 'date', 'play_count', 'total_income'])]
+// SECURITY: 'user_id' is deliberately NOT fillable — ownership is always
+// assigned server-side from the logged-in user, never from request input.
+#[Fillable(['machine_id', 'date', 'play_count', 'total_income'])]
 class IncomeRecord extends Model
 {
     /** @use HasFactory<IncomeRecordFactory> */
