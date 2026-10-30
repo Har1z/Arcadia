@@ -23,6 +23,17 @@ class Machine extends Model
 
     public const STATUS_RETIRED = 'retired';
 
+    /**
+     * Indonesian labels for every status, used by badges, select
+     * options, and the filter dropdown.
+     */
+    public const STATUS_LABELS = [
+        self::STATUS_ACTIVE => 'Aktif',
+        self::STATUS_MAINTENANCE => 'Perawatan',
+        self::STATUS_BROKEN => 'Rusak',
+        self::STATUS_RETIRED => 'Ditarik',
+    ];
+
     protected function casts(): array
     {
         return [

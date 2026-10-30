@@ -70,3 +70,70 @@ document.addEventListener('keydown', (event) => {
         setDrawer(false);
     }
 });
+
+/*
+|--------------------------------------------------------------------------
+| Delete confirmation modal
+|--------------------------------------------------------------------------
+| Every form with data-confirm="message" opens the shared modal before it
+| is submitted. The confirm button calls form.submit() directly, which does
+| NOT fire a submit event, so the form is not intercepted twice.
+*/
+const confirmModal = document.getElementById('confirm-delete-modal');
+const confirmMessage = document.getElementById('confirm-delete-message');
+let pendingForm = null;
+
+function setConfirmModal(open) {
+    if (!confirmModal) {
+        return;
+    }
+
+    confirmModal.classList.toggle('hidden', !open);
+    confirmModal.classList.toggle('flex', open);
+
+    if (!open) {
+        pendingForm = null;
+    }
+}
+
+document.querySelectorAll('form[data-confirm]').forEach((form) => {
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        pendingForm = form;
+
+        if (confirmMessage) {
+            confirmMessage.textContent = form.dataset.confirm;
+        }
+
+        setConfirmModal(true);
+    });
+});
+
+document.querySelectorAll('[data-confirm-cancel]').forEach((button) => {
+    button.addEventListener('click', () => setConfirmModal(false));
+});
+
+document.querySelectorAll('[data-confirm-yes]').forEach((button) => {
+    button.addEventListener('click', () => {
+        if (pendingForm) {
+            pendingForm.submit();
+        }
+
+        setConfirmModal(false);
+    });
+});
+
+// Clicking the dark backdrop also cancels.
+if (confirmModal) {
+    confirmModal.addEventListener('click', (event) => {
+        if (event.target === confirmModal) {
+            setConfirmModal(false);
+        }
+    });
+}
+
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && confirmModal && !confirmModal.classList.contains('hidden')) {
+        setConfirmModal(false);
+    }
+});
