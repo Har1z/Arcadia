@@ -3,7 +3,103 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
-@theme {
+/*
+|--------------------------------------------------------------------------
+| Dark mode
+|--------------------------------------------------------------------------
+| SECURITY/UX: dark mode is driven by a data-theme attribute on <html>,
+| set before the CSS loads by an inline <head> script so the page never
+| flashes the wrong theme.
+*/
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+/*
+|--------------------------------------------------------------------------
+| Design tokens — light theme (white + coffee brown)
+|--------------------------------------------------------------------------
+| Every component color must come from these variables. They are mapped to
+| Tailwind utilities in the @theme inline block below (bg-*, text-ink,
+| border-line, ...), so switching data-theme re-themes the whole UI.
+*/
+:root {
+    --bg: #ffffff;
+    --bg-soft: #faf6f1;
+    --surface: #ffffff;
+    --surface-alt: #f4ece3;
+    --border: #e6dacb;
+    --text: #2e221a;
+    --text-muted: #7a685a;
+    --accent: #6f4e37;
+    --accent-hover: #5a3e2b;
+    --accent-soft: #ebdccb;
+    --on-accent: #ffffff;
+    --success: #3f7d4e;
+    --warning: #b7791f;
+    --danger: #b3402f;
+    --info: #4a6fa5;
+    --scrim: rgb(46 34 26 / 45%);
+    --shadow: 0 1px 3px rgb(60 40 25 / 10%);
+    --radius: 10px;
+    color-scheme: light;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Design tokens — dark theme (warm espresso brown, never pitch black)
+|--------------------------------------------------------------------------
+*/
+:root[data-theme='dark'] {
+    --bg: #211b17;
+    --bg-soft: #2a231e;
+    --surface: #332a24;
+    --surface-alt: #3c3129;
+    --border: #4a3d33;
+    --text: #efe5da;
+    --text-muted: #b3a292;
+    --accent: #c69c72;
+    --accent-hover: #d8b28a;
+    --accent-soft: #4a3a2d;
+    --on-accent: #2a1d12;
+    --success: #6fb383;
+    --warning: #e0a94f;
+    --danger: #e27d6b;
+    --info: #8fb0dc;
+    --scrim: rgb(0 0 0 / 50%);
+    --shadow: 0 1px 3px rgb(0 0 0 / 35%);
+    color-scheme: dark;
+}
+
+/* `inline` keeps the var() reference at the utility call site, so runtime
+   theme switching works without recompiling. */@theme inline {
+    --color-bg: var(--bg);
+    --color-bg-soft: var(--bg-soft);
+    --color-surface: var(--surface);
+    --color-surface-alt: var(--surface-alt);
+    --color-line: var(--border);
+    --color-ink: var(--text);
+    --color-ink-muted: var(--text-muted);
+    --color-accent: var(--accent);
+    --color-accent-hover: var(--accent-hover);
+    --color-accent-soft: var(--accent-soft);
+    --color-on-accent: var(--on-accent);
+    --color-success: var(--success);
+    --color-warning: var(--warning);
+    --color-danger: var(--danger);
+    --color-info: var(--info);
+    --color-scrim: var(--scrim);
+    --shadow-card: var(--shadow);
+    --radius-ui: var(--radius);
+
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+@layer base {
+    /* Smooth theme switching; skipped for users who prefer less motion. */
+    @media (prefers-reduced-motion: no-preference) {
+        html * {
+            transition-property: background-color, border-color, color, fill, stroke;
+            transition-duration: 200ms;
+        }
+    }
 }

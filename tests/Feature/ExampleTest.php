@@ -1,7 +1,6 @@
 <?php
 
-test('the application returns a successful response', function () {
-    $response = $this->get('/');
-
-    $response->assertStatus(200);
+// The home page redirects to the dashboard (see routes/web.php).
+test('the application redirects the home page to the dashboard', function () {
+    $this->get('/')->assertRedirect('/dashboard');
 });
