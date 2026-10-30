@@ -106,5 +106,7 @@
             </main>
         </div>
     </div>
+
+    @include('partials._confirm-delete')
 </body>
 </html>

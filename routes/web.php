@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\MachineController;
 use Illuminate\Support\Facades\Route;
 
 // Root: authenticated users go to the dashboard, guests to the login page.
@@ -28,6 +30,23 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Machines: staff may browse and change only the status (enforced in
+    // the request/controller); create/store/destroy are admin-only.
+    // NOTE: the admin-only registration must come FIRST so the literal
+    // /machines/create path wins over the /machines/{machine} wildcard.
+    Route::resource('machines', MachineController::class)
+        ->only(['create', 'store', 'destroy'])
+        ->middleware('role:admin');
+    Route::resource('machines', MachineController::class)
+        ->except(['create', 'store', 'destroy']);
+
+    // Categories: staff may only view the index; everything else is admin.
+    Route::resource('categories', CategoryController::class)
+        ->except(['index'])
+        ->middleware('role:admin');
+    Route::resource('categories', CategoryController::class)
+        ->only(['index']);
 });
 
 // Component/theme verification page. Not linked from the sidebar;
