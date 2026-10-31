@@ -2,19 +2,18 @@
 
 @section('title', 'Dashboard — Arcadia')
 
-{{-- TODO: all numbers below are static placeholders until the real
-     DashboardController aggregates them from the seeded data. --}}
-
 @section('content')
     <h1 class="text-2xl font-bold text-ink">Dashboard</h1>
     <p class="mt-1 text-sm text-ink-muted">Ringkasan kondisi mesin dan pendapatan.</p>
 
+    {{-- Semua angka dihitung langsung dari database (lihat
+         DashboardController::index) sehingga selalu sesuai data nyata. --}}
     <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         @foreach ([
-            ['label' => 'Total Mesin', 'value' => '14', 'color' => 'text-accent'],
-            ['label' => 'Mesin Aktif', 'value' => '11', 'color' => 'text-success'],
-            ['label' => 'Pendapatan Bulan Ini', 'value' => 'Rp22.602.000', 'color' => 'text-info'],
-            ['label' => 'Perawatan Terbuka', 'value' => '4', 'color' => 'text-warning'],
+            ['label' => 'Total Mesin', 'value' => $totalMachines, 'color' => 'text-accent'],
+            ['label' => 'Mesin Aktif', 'value' => $activeMachines, 'color' => 'text-success'],
+            ['label' => 'Pendapatan Bulan Ini', 'value' => 'Rp'.number_format((float) $monthlyIncome, 0, ',', '.'), 'color' => 'text-info'],
+            ['label' => 'Perawatan Terbuka', 'value' => $openMaintenanceCount, 'color' => 'text-warning'],
         ] as $card)
             <div class="rounded-ui border border-line bg-surface p-5 shadow-card">
                 <p class="text-sm text-ink-muted">{{ $card['label'] }}</p>
@@ -25,61 +24,75 @@
 
     <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
         <div class="rounded-ui border border-line bg-surface shadow-card">
-            <div class="border-b border-line px-5 py-4">
+            <div class="flex items-center justify-between border-b border-line px-5 py-4">
                 <h2 class="font-semibold text-ink">Perawatan Terbuka</h2>
+                <a href="{{ route('maintenance.index') }}" class="text-sm font-medium text-accent hover:underline">Lihat semua</a>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead>
-                        <tr class="bg-surface-alt text-left text-xs font-semibold uppercase tracking-wide text-ink-muted">
-                            <th class="px-5 py-3">Mesin</th>
-                            <th class="px-5 py-3">Masalah</th>
-                            <th class="px-5 py-3">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-line">
-                        <tr class="hover:bg-surface-alt/60">
-                            <td class="px-5 py-3 font-medium">Taiko no Tatsujin</td>
-                            <td class="px-5 py-3 text-ink-muted">Drum kiri suaranya berat</td>
-                            <td class="px-5 py-3"><x-ui.badge color="warning">Terbuka</x-ui.badge></td>
-                        </tr>
-                        <tr class="hover:bg-surface-alt/60">
-                            <td class="px-5 py-3 font-medium">Tekken 7 FR</td>
-                            <td class="px-5 py-3 text-ink-muted">Tombol P1 kadang ga ke input</td>
-                            <td class="px-5 py-3"><x-ui.badge color="warning">Terbuka</x-ui.badge></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            @if ($openMaintenanceLogs->isEmpty())
+                <div class="m-4 rounded-ui border border-dashed border-line bg-bg-soft px-6 py-10 text-center">
+                    <p class="font-medium text-ink">Tidak ada perawatan terbuka</p>
+                    <p class="mt-1 text-sm text-ink-muted">Semua masalah mesin sudah ditangani.</p>
+                </div>
+            @else
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="bg-surface-alt text-left text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                                <th class="px-5 py-3">Mesin</th>
+                                <th class="px-5 py-3">Masalah</th>
+                                <th class="px-5 py-3">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-line">
+                            @foreach ($openMaintenanceLogs as $log)
+                                <tr class="hover:bg-surface-alt/60">
+                                    <td class="px-5 py-3 font-medium">
+                                        <a href="{{ route('machines.show', $log->machine) }}" class="hover:text-accent">{{ $log->machine->name }}</a>
+                                    </td>
+                                    <td class="px-5 py-3 text-ink-muted">{{ $log->issue }}</td>
+                                    <td class="px-5 py-3"><x-ui.log-status :status="$log->status" /></td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
         </div>
 
         <div class="rounded-ui border border-line bg-surface shadow-card">
-            <div class="border-b border-line px-5 py-4">
+            <div class="flex items-center justify-between border-b border-line px-5 py-4">
                 <h2 class="font-semibold text-ink">Pendapatan Terbaru</h2>
+                <a href="{{ route('income.index') }}" class="text-sm font-medium text-accent hover:underline">Lihat semua</a>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead>
-                        <tr class="bg-surface-alt text-left text-xs font-semibold uppercase tracking-wide text-ink-muted">
-                            <th class="px-5 py-3">Mesin</th>
-                            <th class="px-5 py-3">Tanggal</th>
-                            <th class="px-5 py-3 text-right">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-line">
-                        <tr class="hover:bg-surface-alt/60">
-                            <td class="px-5 py-3 font-medium">Wangan Midnight Maximum Tune</td>
-                            <td class="px-5 py-3 text-ink-muted">29 Okt</td>
-                            <td class="px-5 py-3 text-right font-medium">Rp304.000</td>
-                        </tr>
-                        <tr class="hover:bg-surface-alt/60">
-                            <td class="px-5 py-3 font-medium">Initial D Arcade Stage</td>
-                            <td class="px-5 py-3 text-ink-muted">29 Okt</td>
-                            <td class="px-5 py-3 text-right font-medium">Rp190.000</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            @if ($latestIncomeRecords->isEmpty())
+                <div class="m-4 rounded-ui border border-dashed border-line bg-bg-soft px-6 py-10 text-center">
+                    <p class="font-medium text-ink">Belum ada pendapatan tercatat</p>
+                    <p class="mt-1 text-sm text-ink-muted">Catatan pendapatan akan muncul setelah ditambahkan.</p>
+                </div>
+            @else
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="bg-surface-alt text-left text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                                <th class="px-5 py-3">Mesin</th>
+                                <th class="px-5 py-3">Tanggal</th>
+                                <th class="px-5 py-3 text-right">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-line">
+                            @foreach ($latestIncomeRecords as $record)
+                                <tr class="hover:bg-surface-alt/60">
+                                    <td class="px-5 py-3 font-medium">
+                                        <a href="{{ route('machines.show', $record->machine) }}" class="hover:text-accent">{{ $record->machine->name }}</a>
+                                    </td>
+                                    <td class="px-5 py-3 text-ink-muted">{{ $record->date->translatedFormat('d M Y') }}</td>
+                                    <td class="px-5 py-3 text-right font-medium"><x-ui.rupiah :value="$record->total_income" /></td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
         </div>
     </div>
 
@@ -88,17 +101,22 @@
         <h2 class="font-semibold text-ink">Mesin per Status</h2>
         <div class="mt-4 space-y-3">
             @foreach ([
-                ['label' => 'Aktif', 'count' => 11, 'class' => 'bg-success'],
-                ['label' => 'Perawatan', 'count' => 2, 'class' => 'bg-warning'],
-                ['label' => 'Rusak', 'count' => 1, 'class' => 'bg-danger'],
-                ['label' => 'Ditarik', 'count' => 1, 'class' => 'bg-line'],
-            ] as $bar)
+                \App\Models\Machine::STATUS_ACTIVE => 'bg-success',
+                \App\Models\Machine::STATUS_MAINTENANCE => 'bg-warning',
+                \App\Models\Machine::STATUS_BROKEN => 'bg-danger',
+                \App\Models\Machine::STATUS_RETIRED => 'bg-line',
+            ] as $status => $barClass)
+                @php
+                    $count = (int) ($statusCounts[$status] ?? 0);
+                    // Guard against division by zero on an empty fleet.
+                    $percentage = $totalMachines > 0 ? round($count / $totalMachines * 100) : 0;
+                @endphp
                 <div class="flex items-center gap-3 text-sm">
-                    <span class="w-24 shrink-0 text-ink-muted">{{ $bar['label'] }}</span>
+                    <span class="w-24 shrink-0 text-ink-muted">{{ \App\Models\Machine::STATUS_LABELS[$status] }}</span>
                     <div class="h-2 flex-1 overflow-hidden rounded-full bg-surface-alt">
-                        <div class="h-full rounded-full {{ $bar['class'] }}" style="width: {{ round($bar['count'] / 14 * 100) }}%"></div>
+                        <div class="h-full rounded-full {{ $barClass }}" style="width: {{ $percentage }}%"></div>
                     </div>
-                    <span class="w-8 text-right font-medium">{{ $bar['count'] }}</span>
+                    <span class="w-8 text-right font-medium">{{ $count }}</span>
                 </div>
             @endforeach
         </div>

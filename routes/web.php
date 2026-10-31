@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\MachineController;
 use App\Http\Controllers\MaintenanceController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 // Root: authenticated users go to the dashboard, guests to the login page.
@@ -60,6 +61,12 @@ Route::middleware('auth')->group(function () {
         ->parameters(['maintenance' => 'maintenanceLog']);
     Route::resource('income', IncomeController::class)
         ->parameters(['income' => 'incomeRecord']);
+
+    // User management is fully admin-only. There is no show page — the
+    // index plus create/edit forms cover the whole workflow.
+    Route::resource('users', UserController::class)
+        ->except(['show'])
+        ->middleware('role:admin');
 });
 
 // Component/theme verification page. Not linked from the sidebar;
