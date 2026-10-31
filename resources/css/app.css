@@ -103,3 +103,111 @@
         }
     }
 }
+
+/*
+|--------------------------------------------------------------------------
+| Maimai DX playfield loader (white silhouette)
+|--------------------------------------------------------------------------
+| A plain judgment ring: white notes spawn along 8 lanes at 22.5° offsets
+| (lane 1 top-right, clockwise, like the cabinet), one every cycle/8, and
+| fly radially out to the ring, dissolving as they approach it so the
+| sweep reads as a continuous clockwise spin.
+|
+| Tunable constants (arcade-cabinet spawn behavior):
+|   --loader-spawn-radius     SPAWN_RADIUS: edge of the invisible spawn
+|                             circle (no stroke, no fill, pure geometry —
+|                             notes never spawn at the exact center).
+|   --loader-start-scale      START_SCALE: note scale at spawn.
+|   --loader-travel-duration  TRAVEL_DURATION: one lane's full trip.
+|
+| FADE_IN_DISTANCE_RATIO = 0.18 (fade + scale-in finish after 18% of the
+| travel distance). Keyframe selectors cannot use var(), so it is written
+| out as the 14% keyframe (= 0.18 × 78% arrival) and inside its translateY
+| calc — update BOTH when changing the ratio.
+|
+| All 8 lanes share ONE keyframe; geometry and phase come from per-lane CSS
+| variables. Negative animation-delays start every element mid-cycle so the
+| loop never visibly restarts.
+|
+| Always pure white (not themed): the overlay dims the page, so white reads
+| on both light and dark themes.
+*/
+.maimai-loader {
+    --loader-size: 256px;
+    --loader-travel-duration: 2s;
+    --loader-note: calc(var(--loader-size) * 0.1);
+    --loader-travel: calc(var(--loader-size) * 0.4);
+    --loader-spawn-radius: calc(var(--loader-size) * 0.09);
+    --loader-start-scale: 0.4;
+
+    position: relative;
+    width: var(--loader-size);
+    height: var(--loader-size);
+    color: #fff;
+    filter: drop-shadow(0 0 4px rgb(0 0 0 / 35%));
+}
+
+.maimai-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: calc(var(--loader-size) * 0.025) solid rgb(255 255 255 / 85%);
+}
+
+/* A lane is a wrapper rotated to the note angle; the note inside only
+   animates translateY, so one keyframe serves all 8 directions. */
+.maimai-lane {
+    position: absolute;
+    inset: 0;
+    transform: rotate(var(--angle));
+}
+
+.maimai-note {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: var(--loader-note);
+    height: var(--loader-note);
+    margin: calc(var(--loader-note) / -2);
+    border-radius: 50%;
+    background: currentColor;
+    /* Soft outer halo keeps the note readable as a "tap note". */
+    box-shadow: 0 0 0 calc(var(--loader-note) * 0.25) rgb(255 255 255 / 40%);
+    /* Linear speed: distance % == time %, which the fade-in ratio math
+       below relies on, and notes glide at constant arcade speed. */
+    animation: loader-note var(--loader-travel-duration) linear infinite;
+    animation-delay: var(--note-delay);
+}
+
+@keyframes loader-note {
+    /* Spawns at the edge of the invisible spawn circle, on the lane angle —
+       never at the center point. */
+    0% {
+        transform: translateY(calc(var(--loader-spawn-radius) * -1)) scale(var(--loader-start-scale));
+        opacity: 0;
+    }
+    /* FADE_IN_DISTANCE_RATIO (0.18) of the distance traveled: fully faded
+       in and scaled up to 1x. translateY = spawn + 0.18 × (outer - spawn). */
+    14% {
+        transform: translateY(calc((var(--loader-spawn-radius) + (var(--loader-travel) - var(--loader-spawn-radius)) * 0.18) * -1)) scale(1);
+        opacity: 1;
+    }
+    /* Fully visible until 65%, then dissolves quickly while still
+       traveling — the note is gone just before reaching the ring. */
+    65% {
+        opacity: 1;
+    }
+    /* Arrives at the outer ring exactly on the beat. */
+    78%,
+    100% {
+        transform: translateY(calc(var(--loader-travel) * -1)) scale(1.3);
+        opacity: 0;
+    }
+}
+
+/* Reduced motion: static ring, no flying notes. */
+@media (prefers-reduced-motion: reduce) {
+    .maimai-note {
+        display: none;
+    }
+}

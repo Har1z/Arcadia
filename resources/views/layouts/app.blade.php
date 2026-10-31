@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" href="/favicon.webp" type="image/webp">
     <title>@yield('title', 'Arcadia')</title>
 
     {{-- SECURITY: must run before the stylesheet so the saved theme is
@@ -108,5 +108,6 @@
     </div>
 
     @include('partials._confirm-delete')
+    @include('partials._loading')
 </body>
 </html>

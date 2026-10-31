@@ -26,6 +26,15 @@ class User extends Authenticatable
     public const ROLE_STAFF = 'staff';
 
     /**
+     * Indonesian labels for every role, used by the user form, filter,
+     * and badges.
+     */
+    public const ROLE_LABELS = [
+        self::ROLE_ADMIN => 'Admin',
+        self::ROLE_STAFF => 'Staff',
+    ];
+
+    /**
      * Mirror of the database default so a freshly created (unsaved or
      * just-created) user already reports itself as staff.
      *

@@ -34,3 +34,24 @@ it('puts the theme init script before the stylesheet so the page never flashes',
         ->and($stylesheet)->toBeInt()
         ->and($themeInit)->toBeLessThan($stylesheet);
 });
+
+it('renders the maimai loading overlay in both layouts', function () {
+    // Guest page first: actingAs() below would otherwise redirect /login.
+    $guestHtml = $this->get('/login')->getContent();
+    $appHtml = $this->actingAs(User::factory()->create())->get('/dashboard')->getContent();
+
+    foreach ([$appHtml, $guestHtml] as $html) {
+        expect($html)
+            ->toContain('id="loading-overlay"')
+            ->toContain('maimai-loader')
+            // Arcade layout: lane 1 top-right, lane 8 top-left.
+            ->toContain('22.5deg')
+            ->toContain('337.5deg')
+            ->toContain('Memuat');
+
+        expect(substr_count($html, 'maimai-note'))->toBe(8)
+            ->and(substr_count($html, 'maimai-lane'))->toBe(8)
+            // The judgment ring carries no buttons anymore.
+            ->and(substr_count($html, 'maimai-button'))->toBe(0);
+    }
+});

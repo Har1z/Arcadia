@@ -34,9 +34,11 @@ class IncomeRecordSeeder extends Seeder
                 // seeder assigns it directly — app input never can.
                 $record = new IncomeRecord([
                     'machine_id' => $machine->id,
-                    // Past months close at month end; the running month is
-                    // recorded as of today so dashboard ranges include it.
-                    'date' => now()->subMonths($monthsAgo)->endOfMonth()->min(now()),
+                    // Start from the 1st of the month so subtracting months
+                    // never overflows (e.g. Mar 31 - 1 month). Past months
+                    // close at month end; the running month is recorded as
+                    // of today so dashboard ranges include it.
+                    'date' => now()->startOfMonth()->subMonths($monthsAgo)->endOfMonth()->min(now()),
                     'play_count' => $playCount,
                     'total_income' => $playCount * (float) $machine->price_per_play,
                 ]);

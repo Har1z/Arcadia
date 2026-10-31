@@ -116,7 +116,10 @@ document.querySelectorAll('[data-confirm-cancel]').forEach((button) => {
 document.querySelectorAll('[data-confirm-yes]').forEach((button) => {
     button.addEventListener('click', () => {
         if (pendingForm) {
+            // .submit() bypasses the submit event, so the overlay is
+            // started manually here (see the loading overlay section).
             pendingForm.submit();
+            showLoading();
         }
 
         setConfirmModal(false);
@@ -137,3 +140,75 @@ document.addEventListener('keydown', (event) => {
         setConfirmModal(false);
     }
 });
+
+/*
+|--------------------------------------------------------------------------
+| Loading overlay (slow database round-trips)
+|--------------------------------------------------------------------------
+| Every page view waits on the remote database, so navigations can take a
+| moment. Show the maimai loader once a same-origin navigation starts —
+| after a short delay, so fast pages never flash it — and hide it again
+| on pageshow (fires on load and on back/forward cache restores).
+*/
+const loadingOverlay = document.getElementById('loading-overlay');
+let loadingTimer = null;
+
+function showLoading() {
+    if (!loadingOverlay) {
+        return;
+    }
+
+    clearTimeout(loadingTimer);
+    // 250ms grace period: instant navigations never show the overlay.
+    loadingTimer = setTimeout(() => {
+        loadingOverlay.classList.remove('hidden');
+        loadingOverlay.classList.add('flex');
+    }, 250);
+}
+
+function hideLoading() {
+    if (!loadingOverlay) {
+        return;
+    }
+
+    clearTimeout(loadingTimer);
+    loadingOverlay.classList.add('hidden');
+    loadingOverlay.classList.remove('flex');
+}
+
+document.addEventListener('click', (event) => {
+    // Only plain left-clicks; modified clicks open new tabs.
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        return;
+    }
+
+    const link = event.target.closest('a[href]');
+    if (!link || link.target === '_blank' || link.hasAttribute('download')) {
+        return;
+    }
+
+    const url = new URL(link.href, window.location.href);
+
+    if (url.origin !== window.location.origin) {
+        return; // external link
+    }
+
+    // Same-page anchors do not navigate.
+    if (url.hash !== '' && url.pathname === window.location.pathname && url.search === window.location.search) {
+        return;
+    }
+
+    showLoading();
+});
+
+document.addEventListener('submit', (event) => {
+    // Forms stopped by other listeners (e.g. the delete confirmation
+    // modal) never navigate, so they must not open the overlay either.
+    if (event.defaultPrevented) {
+        return;
+    }
+
+    showLoading();
+});
+
+window.addEventListener('pageshow', hideLoading);
