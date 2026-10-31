@@ -34,5 +34,7 @@
 
         @yield('content')
     </div>
+
+    @include('partials._loading')
 </body>
 </html>

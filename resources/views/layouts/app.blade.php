@@ -108,5 +108,6 @@
     </div>
 
     @include('partials._confirm-delete')
+    @include('partials._loading')
 </body>
 </html>
