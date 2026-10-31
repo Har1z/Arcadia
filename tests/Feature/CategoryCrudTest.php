@@ -111,3 +111,14 @@ it('searches categories by name', function () {
         ->assertSee('Rhythm')
         ->assertDontSee('Balapan.');
 });
+
+// SECURITY: SQL-like search input is bound as a parameter and treated as text.
+it('treats SQL-like search input as plain text', function () {
+    Category::create(['name' => 'Racing', 'description' => 'Balapan.']);
+
+    $this->actingAs(User::factory()->create())
+        ->get("/categories?q='".urlencode(' OR 1=1 --'))
+        ->assertOk()
+        ->assertDontSee('Racing')
+        ->assertSee('Belum ada kategori');
+});

@@ -68,7 +68,3 @@ Route::middleware('auth')->group(function () {
         ->except(['show'])
         ->middleware('role:admin');
 });
-
-// Component/theme verification page. Not linked from the sidebar;
-// remove before production deployment.
-Route::get('/samples/ui', fn () => view('samples.ui'))->name('samples.ui');

@@ -16,14 +16,6 @@ it('renders the dashboard inside the app layout', function () {
         ->assertSee('Total Mesin', false);
 });
 
-it('renders the component showcase', function () {
-    $this->get('/samples/ui')
-        ->assertOk()
-        ->assertSee('Aktif', false)
-        ->assertSee('Perawatan', false)
-        ->assertSee('Keadaan Kosong', false);
-});
-
 it('puts the theme init script before the stylesheet so the page never flashes', function () {
     $html = $this->actingAs(User::factory()->create())->get('/dashboard')->getContent();
 
